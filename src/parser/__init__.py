@@ -1,6 +1,6 @@
 """PDF parsing modules."""
 
 from src.parser.base import BaseParser
-from src.parser.ollama import OllamaParser
+from src.parser.pdfplumber_parser import PdfPlumberParser
 
-__all__ = ["BaseParser", "OllamaParser"]
+__all__ = ["BaseParser", "PdfPlumberParser"]

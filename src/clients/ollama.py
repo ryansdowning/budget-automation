@@ -25,7 +25,7 @@ class OllamaClient:
         host: str = "localhost",
         port: int = 11434,
         model: str = "mistral",
-        timeout: float = 120.0,
+        timeout: float = 300.0,
     ):
         self.base_url = f"http://{host}:{port}"
         self.model = model
@@ -58,6 +58,8 @@ class OllamaClient:
             "stream": False,
             "options": {
                 "temperature": temperature,
+                "num_predict": 4096,  # Enough for ~100 transactions
+                "num_ctx": 16384,     # Balanced context window
             },
         }
 
@@ -91,9 +93,16 @@ class OllamaClient:
         data = response.json()
         result = data.get("response", "")
 
-        eval_duration_ms = data.get("eval_duration", 0) / 1_000_000
+        # Timing breakdown (all in nanoseconds from Ollama)
+        total_ns = data.get("total_duration", 0)
+        load_ns = data.get("load_duration", 0)
+        prompt_eval_ns = data.get("prompt_eval_duration", 0)
+        eval_ns = data.get("eval_duration", 0)
+
         logger.debug(
-            f"Ollama response: len={len(result)}, tokens={data.get('eval_count')}, time={eval_duration_ms:.1f}ms"
+            f"Ollama response: len={len(result)}, "
+            f"prompt_tokens={data.get('prompt_eval_count')}, eval_tokens={data.get('eval_count')}, "
+            f"total={total_ns/1e9:.2f}s (prompt={prompt_eval_ns/1e9:.2f}s, eval={eval_ns/1e9:.2f}s, load={load_ns/1e9:.2f}s)"
         )
 
         return result
@@ -229,9 +238,16 @@ class OllamaClient:
         data = response.json()
         result = data.get("response", "")
 
-        eval_duration_ms = data.get("eval_duration", 0) / 1_000_000
+        # Timing breakdown (all in nanoseconds from Ollama)
+        total_ns = data.get("total_duration", 0)
+        load_ns = data.get("load_duration", 0)
+        prompt_eval_ns = data.get("prompt_eval_duration", 0)
+        eval_ns = data.get("eval_duration", 0)
+
         logger.debug(
-            f"Ollama vision response: len={len(result)}, tokens={data.get('eval_count')}, time={eval_duration_ms:.1f}ms"
+            f"Ollama vision response: len={len(result)}, "
+            f"prompt_tokens={data.get('prompt_eval_count')}, eval_tokens={data.get('eval_count')}, "
+            f"total={total_ns/1e9:.2f}s (prompt={prompt_eval_ns/1e9:.2f}s, eval={eval_ns/1e9:.2f}s, load={load_ns/1e9:.2f}s)"
         )
 
         return result
@@ -297,5 +313,5 @@ class OllamaClient:
     def __enter__(self) -> "OllamaClient":
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *_) -> None:
         self.close()

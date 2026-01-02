@@ -6,12 +6,9 @@ Parse credit card statement PDFs and categorize transactions using local LLMs.
 
 - Python 3.13+
 - [Ollama](https://ollama.ai) running locally
-- poppler (for PDF processing)
-- tesseract (for OCR)
 
 ```bash
 # macOS
-brew install poppler tesseract
 ollama pull mistral
 ```
 
@@ -94,11 +91,10 @@ The `keywords` field helps the LLM with common merchant names but isn't required
 
 ## How It Works
 
-1. **PDF → Images**: pdf2image converts PDF pages to images
-2. **OCR**: Tesseract extracts text from each page
-3. **Parsing**: Ollama (mistral) structures OCR text into transactions
-4. **Categorization**: Ollama classifies each transaction into categories
-5. **Output**: Results written to CSV with category breakdown
+1. **PDF Text Extraction**: pdfplumber extracts text with proper line alignment
+2. **Parsing**: Ollama (mistral) structures the text into transactions
+3. **Categorization**: Ollama classifies each transaction into categories
+4. **Output**: Results written to CSV with category breakdown
 
 All processing runs locally - no data is sent to external services.
 

@@ -8,9 +8,8 @@ dependencies = [
     "pydantic==2.10.6",
     "loguru==0.7.3",
     "httpx==0.28.1",
-    "pdf2image==1.17.0",
     "pillow==11.1.0",
-    "pytesseract==0.3.13",
+    "pdfplumber>=0.11.8",
 ]
 
 [project.optional-dependencies]

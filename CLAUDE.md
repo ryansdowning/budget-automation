@@ -2,8 +2,8 @@
 
 ## Project Overview
 
-Transaction categorizer using OCR + Ollama for local processing:
-- **Tesseract**: OCR for text extraction from PDF images
+Transaction categorizer using pdfplumber + Ollama for local processing:
+- **pdfplumber**: Direct PDF text extraction with proper line alignment
 - **Ollama (mistral)**: LLM for parsing and categorization
 
 ## Project Structure
@@ -18,8 +18,8 @@ src/
 ├── clients/
 │   └── ollama.py       # Ollama HTTP client
 ├── parser/
-│   ├── base.py         # Abstract BaseParser
-│   └── ollama.py       # OllamaParser (OCR + LLM)
+│   ├── base.py             # Abstract BaseParser
+│   └── pdfplumber_parser.py # PdfPlumberParser (pdfplumber + LLM)
 └── prompts/
     ├── parse.py        # PDF extraction prompts
     └── categorize.py   # Categorization prompts
@@ -111,9 +111,8 @@ print(client.check_model())       # True/False
 - **pydantic**: Data validation and models
 - **loguru**: Logging
 - **httpx**: HTTP client for Ollama API
-- **pdf2image**: PDF to PIL Image conversion (requires poppler)
+- **pdfplumber**: PDF text extraction
 - **pillow**: Image handling
-- **pytesseract**: OCR (requires tesseract)
 
 ## Testing Notes
 
@@ -123,8 +122,7 @@ print(client.check_model())       # True/False
 
 ## Gotchas
 
-1. **pdf2image needs poppler** - `brew install poppler`
-2. **pytesseract needs tesseract** - `brew install tesseract`
-3. **Ollama must be running** - check with `ollama list`
-4. **Batch categorization** may miss transactions if descriptions don't match exactly - falls back to individual
-5. **Structured output requires Ollama 0.5+** for JSON schema support
+1. **Ollama must be running** - check with `ollama list`
+2. **Batch categorization** may miss transactions if descriptions don't match exactly - falls back to individual
+3. **Structured output requires Ollama 0.5+** for JSON schema support
+4. **Multi-line transactions** (like flight itineraries) may not parse correctly

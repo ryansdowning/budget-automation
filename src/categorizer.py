@@ -1,6 +1,7 @@
 """Transaction categorization using Ollama LLM."""
 
 import json
+import time
 
 from loguru import logger
 
@@ -111,15 +112,21 @@ class Categorizer:
         if not transactions:
             return []
 
+        total_start = time.perf_counter()
         results: list[CategorizedTransaction] = []
         batches = list(self._batch(transactions, self.batch_size))
 
         logger.info(f"Categorizing {len(transactions)} transactions in {len(batches)} batches")
 
         for i, batch in enumerate(batches):
-            logger.debug(f"Processing batch {i + 1}/{len(batches)}, size={len(batch)}")
+            batch_start = time.perf_counter()
             batch_results = self._categorize_batch(batch, batch_num=i + 1)
+            batch_time = time.perf_counter() - batch_start
+            logger.info(f"[TIMING] Batch {i + 1}/{len(batches)}: {batch_time:.2f}s ({len(batch)} transactions)")
             results.extend(batch_results)
+
+        total_time = time.perf_counter() - total_start
+        logger.info(f"[TIMING] Total categorization: {total_time:.2f}s")
 
         return results
 

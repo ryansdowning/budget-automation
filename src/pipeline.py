@@ -1,6 +1,7 @@
 """Pipeline orchestrator for parsing and categorizing transactions."""
 
 import csv
+import time
 from pathlib import Path
 
 from loguru import logger
@@ -9,7 +10,8 @@ from src.categorizer import Categorizer
 from src.clients.ollama import OllamaClient
 from src.logging_config import DebugArtifacts
 from src.models import CategoriesConfig, CategorizedTransaction, RawTransaction
-from src.parser.ollama import OllamaParser
+from src.parser.base import BaseParser
+from src.parser.pdfplumber_parser import PdfPlumberParser
 
 
 class Pipeline:
@@ -22,6 +24,7 @@ class Pipeline:
         ollama_port: int = 11434,
         ollama_model: str = "mistral",
         debug_artifacts: DebugArtifacts | None = None,
+        parser: BaseParser | None = None,
     ):
         """Initialize the pipeline.
 
@@ -31,6 +34,7 @@ class Pipeline:
             ollama_port: Ollama server port
             ollama_model: Ollama model name
             debug_artifacts: Optional debug artifact manager
+            parser: Optional custom parser (defaults to PdfPlumberParser)
         """
         self.categories = categories
         self.debug_artifacts = debug_artifacts or DebugArtifacts()
@@ -41,10 +45,8 @@ class Pipeline:
             port=ollama_port,
             model=ollama_model,
         )
-        self._parser = OllamaParser(
-            host=ollama_host,
-            port=ollama_port,
-            model=ollama_model,
+        self._parser = parser or PdfPlumberParser(
+            ollama_client=self._ollama,
             debug_artifacts=self.debug_artifacts,
         )
         self._categorizer = Categorizer(
@@ -67,9 +69,11 @@ class Pipeline:
         Returns:
             List of categorized transactions
         """
+        pipeline_start = time.perf_counter()
         logger.info(f"Processing {len(pdf_paths)} PDF file(s)")
 
         # Step 1: Parse all PDFs
+        parse_start = time.perf_counter()
         all_transactions: list[RawTransaction] = []
         for i, pdf_path in enumerate(pdf_paths):
             logger.info(f"[{i + 1}/{len(pdf_paths)}] {pdf_path.name}")
@@ -80,10 +84,12 @@ class Pipeline:
                 logger.error(f"Failed to parse {pdf_path.name}: {e}")
                 continue
 
-        logger.info(f"Parsed {len(all_transactions)} total transactions")
+        parse_time = time.perf_counter() - parse_start
+        logger.info(f"[TIMING] All PDFs parsed: {parse_time:.2f}s ({len(all_transactions)} transactions)")
 
         if dry_run:
-            # Convert to CategorizedTransaction with placeholder category
+            total_time = time.perf_counter() - pipeline_start
+            logger.info(f"[TIMING] Pipeline total (dry-run): {total_time:.2f}s")
             return [
                 CategorizedTransaction(
                     date=tx.date,
@@ -105,7 +111,8 @@ class Pipeline:
 
         categorized = self._categorizer.categorize(all_transactions)
 
-        logger.info(f"Categorized {len(categorized)} transactions")
+        total_time = time.perf_counter() - pipeline_start
+        logger.info(f"[TIMING] Pipeline total: {total_time:.2f}s")
 
         return categorized
 
@@ -205,11 +212,12 @@ class Pipeline:
 
     def close(self) -> None:
         """Clean up resources."""
-        self._parser.close()
+        if hasattr(self._parser, 'close'):
+            self._parser.close()
         self._ollama.close()
 
     def __enter__(self) -> "Pipeline":
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *_) -> None:
         self.close()
