@@ -1,0 +1,94 @@
+{
+  "categories": [
+    {
+      "name": "Groceries",
+      "description": "Supermarkets, grocery stores, food shopping",
+      "keywords": ["SAFEWAY", "TRADER JOE", "WHOLE FOODS", "KROGER", "COSTCO", "ALDI", "PUBLIX", "WEGMANS", "SPROUTS"]
+    },
+    {
+      "name": "Restaurants",
+      "description": "Dining out, takeout, food delivery",
+      "keywords": ["DOORDASH", "UBER EATS", "GRUBHUB", "POSTMATES", "SEAMLESS", "RESTAURANT", "CAFE", "PIZZA", "STARBUCKS", "DUNKIN"]
+    },
+    {
+      "name": "Transportation",
+      "description": "Gas, rideshare, public transit, parking, tolls",
+      "keywords": ["UBER", "LYFT", "SHELL", "CHEVRON", "EXXON", "BP", "MOBIL", "PARKING", "TRANSIT", "METRO", "TOLL"]
+    },
+    {
+      "name": "Utilities",
+      "description": "Electric, gas, water, internet, phone bills",
+      "keywords": ["PG&E", "COMCAST", "VERIZON", "AT&T", "T-MOBILE", "ELECTRIC", "WATER", "GAS COMPANY", "INTERNET", "XFINITY"]
+    },
+    {
+      "name": "Entertainment",
+      "description": "Streaming services, movies, games, events, hobbies",
+      "keywords": ["NETFLIX", "SPOTIFY", "STEAM", "TICKETMASTER", "HULU", "DISNEY+", "HBO", "YOUTUBE", "APPLE MUSIC", "CINEMA", "THEATER"]
+    },
+    {
+      "name": "Shopping",
+      "description": "General retail, online shopping, department stores",
+      "keywords": ["AMAZON", "TARGET", "WALMART", "BEST BUY", "MACYS", "NORDSTROM", "EBAY", "ETSY", "IKEA"]
+    },
+    {
+      "name": "Health",
+      "description": "Pharmacy, doctors, medical expenses, gym, fitness",
+      "keywords": ["CVS", "WALGREENS", "KAISER", "PHARMACY", "MEDICAL", "DOCTOR", "DENTAL", "VISION", "GYM", "FITNESS", "PELOTON"]
+    },
+    {
+      "name": "Travel",
+      "description": "Flights, hotels, vacation expenses, car rentals",
+      "keywords": ["AIRLINE", "HOTEL", "AIRBNB", "EXPEDIA", "BOOKING", "MARRIOTT", "HILTON", "HERTZ", "ENTERPRISE", "SOUTHWEST", "UNITED", "DELTA", "AMERICAN AIR"]
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Recurring monthly/annual software and service subscriptions",
+      "keywords": ["SUBSCRIPTION", "MEMBERSHIP", "PATREON", "SUBSTACK", "ADOBE", "MICROSOFT", "GOOGLE", "DROPBOX", "SLACK"]
+    },
+    {
+      "name": "Insurance",
+      "description": "Health, auto, home, life insurance premiums",
+      "keywords": ["INSURANCE", "GEICO", "STATE FARM", "ALLSTATE", "PROGRESSIVE", "LIBERTY MUTUAL", "USAA"]
+    },
+    {
+      "name": "Education",
+      "description": "Tuition, courses, books, learning materials",
+      "keywords": ["UNIVERSITY", "COLLEGE", "SCHOOL", "UDEMY", "COURSERA", "SKILLSHARE", "BOOKS", "TEXTBOOK"]
+    },
+    {
+      "name": "Personal Care",
+      "description": "Haircuts, beauty, spa, personal grooming",
+      "keywords": ["SALON", "BARBER", "SPA", "BEAUTY", "ULTA", "SEPHORA", "HAIRCUT"]
+    },
+    {
+      "name": "Home",
+      "description": "Home improvement, furniture, maintenance, cleaning",
+      "keywords": ["HOME DEPOT", "LOWES", "ACE HARDWARE", "CLEANING", "FURNITURE", "REPAIR", "PLUMBER", "ELECTRICIAN"]
+    },
+    {
+      "name": "Pets",
+      "description": "Pet food, supplies, veterinary care",
+      "keywords": ["PETCO", "PETSMART", "VET", "VETERINARY", "CHEWY"]
+    },
+    {
+      "name": "Gifts & Donations",
+      "description": "Charitable donations, gifts for others",
+      "keywords": ["DONATION", "CHARITY", "GIFT", "FLOWERS", "HALLMARK"]
+    },
+    {
+      "name": "Fees & Charges",
+      "description": "Bank fees, ATM fees, service charges, interest",
+      "keywords": ["FEE", "CHARGE", "INTEREST", "ATM", "OVERDRAFT", "LATE FEE"]
+    },
+    {
+      "name": "Income",
+      "description": "Payments received, refunds, credits",
+      "keywords": ["PAYMENT", "REFUND", "CREDIT", "DEPOSIT", "CASHBACK", "REWARD"]
+    },
+    {
+      "name": "Other",
+      "description": "Transactions that don't fit other categories",
+      "keywords": []
+    }
+  ]
+}
