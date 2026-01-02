@@ -20,6 +20,10 @@ uv sync
 
 ## Usage
 
+The CLI has two commands: `process` (default) and `summary`.
+
+### Process PDFs
+
 ```bash
 # Basic usage
 python -m src.cli statement.pdf -o output.csv
@@ -44,6 +48,18 @@ python -m src.cli statement.pdf -o output.csv --summary
 
 # Use different Ollama model
 python -m src.cli statement.pdf -o output.csv --ollama-model llama3
+```
+
+### Generate Summary from CSV
+
+Generate a summary from an existing transactions CSV. This allows you to review and correct the categorized transactions before generating the final summary.
+
+```bash
+# Generate summary (sorted by total descending)
+python -m src.cli summary transactions.csv -o summary.csv
+
+# Include all categories with zeros for unused ones
+python -m src.cli summary transactions.csv -o summary.csv -c categories/budget_sheet_categories.json
 ```
 
 ## Output Format

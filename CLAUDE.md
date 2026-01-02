@@ -92,10 +92,20 @@ python -m src.cli statement.pdf -o out.csv --debug --dry-run
 # Check debug/*.json and debug/*.png
 ```
 
-### Generate category summary
+### Generate category summary (with PDF processing)
 ```bash
 python -m src.cli statement.pdf -o out.csv --summary
 # Creates out.csv and out_summary.csv with category totals
+```
+
+### Generate summary from existing CSV
+Use this to review/correct transactions before generating the final summary:
+```bash
+# Generate summary sorted by total
+python -m src.cli summary transactions.csv -o summary.csv
+
+# Include all categories (fills zeros for unused)
+python -m src.cli summary transactions.csv -o summary.csv -c categories/budget_sheet_categories.json
 ```
 
 ### Test Ollama connection
