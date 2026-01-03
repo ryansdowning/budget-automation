@@ -10,19 +10,22 @@ Transaction categorizer using pdfplumber + Ollama for local processing:
 
 ```
 src/
-├── cli.py              # Entry point, arg parsing
-├── pipeline.py         # Orchestrates parse → categorize → CSV
-├── categorizer.py      # Batched LLM categorization
-├── models.py           # Pydantic models (RawTransaction, etc.)
-├── logging_config.py   # Loguru setup + DebugArtifacts
+├── cli/
+│   ├── __init__.py         # Shared utilities (load_categories)
+│   ├── categorize.py       # CLI for PDF processing
+│   └── summarize.py        # CLI for summary generation
+├── pipeline.py             # Orchestrates parse → categorize → CSV
+├── categorizer.py          # Batched LLM categorization
+├── models.py               # Pydantic models (RawTransaction, etc.)
+├── logging_config.py       # Loguru setup + DebugArtifacts
 ├── clients/
-│   └── ollama.py       # Ollama HTTP client
+│   └── ollama.py           # Ollama HTTP client
 ├── parser/
 │   ├── base.py             # Abstract BaseParser
 │   └── pdfplumber_parser.py # PdfPlumberParser (pdfplumber + LLM)
 └── prompts/
-    ├── parse.py        # PDF extraction prompts
-    └── categorize.py   # Categorization prompts
+    ├── parse.py            # PDF extraction prompts
+    └── categorize.py       # Categorization prompts
 ```
 
 ## Key Patterns
@@ -83,18 +86,18 @@ Use `--ollama-model llama3` to use a different model for both parsing and catego
 
 ### Run with verbose logging
 ```bash
-python -m src.cli statement.pdf -o out.csv -v
+python -m src.cli.categorize statement.pdf -o out.csv -v
 ```
 
 ### Debug parsing issues
 ```bash
-python -m src.cli statement.pdf -o out.csv --debug --dry-run
-# Check debug/*.json and debug/*.png
+python -m src.cli.categorize statement.pdf -o out.csv --debug --dry-run
+# Check debug/*.json and debug/*.txt
 ```
 
 ### Generate category summary (with PDF processing)
 ```bash
-python -m src.cli statement.pdf -o out.csv --summary
+python -m src.cli.categorize statement.pdf -o out.csv --summary
 # Creates out.csv and out_summary.csv with category totals
 ```
 
@@ -102,10 +105,10 @@ python -m src.cli statement.pdf -o out.csv --summary
 Use this to review/correct transactions before generating the final summary:
 ```bash
 # Generate summary sorted by total
-python -m src.cli summary transactions.csv -o summary.csv
+python -m src.cli.summarize transactions.csv -o summary.csv
 
 # Include all categories (fills zeros for unused)
-python -m src.cli summary transactions.csv -o summary.csv -c categories/budget_sheet_categories.json
+python -m src.cli.summarize transactions.csv -o summary.csv -c categories/budget_sheet_categories.json
 ```
 
 ### Test Ollama connection

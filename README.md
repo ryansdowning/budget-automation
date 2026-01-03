@@ -20,34 +20,34 @@ uv sync
 
 ## Usage
 
-The CLI has two commands: `process` (default) and `summary`.
+There are two CLI scripts: `categorize` for processing PDFs and `summarize` for generating summaries.
 
-### Process PDFs
+### Categorize Transactions
 
 ```bash
 # Basic usage
-python -m src.cli statement.pdf -o output.csv
+python -m src.cli.categorize statement.pdf -o output.csv
 
 # Multiple files
-python -m src.cli statements/*.pdf -o all_transactions.csv
+python -m src.cli.categorize statements/*.pdf -o all_transactions.csv
 
 # Custom categories
-python -m src.cli statement.pdf -c my_categories.json -o output.csv
+python -m src.cli.categorize statement.pdf -c my_categories.json -o output.csv
 
 # Verbose output (shows progress)
-python -m src.cli statement.pdf -o output.csv -v
+python -m src.cli.categorize statement.pdf -o output.csv -v
 
 # Debug mode (saves intermediate files)
-python -m src.cli statement.pdf -o output.csv --debug
+python -m src.cli.categorize statement.pdf -o output.csv --debug
 
 # Parse only, skip categorization
-python -m src.cli statement.pdf -o output.csv --dry-run
+python -m src.cli.categorize statement.pdf -o output.csv --dry-run
 
-# Generate summary CSV with category totals
-python -m src.cli statement.pdf -o output.csv --summary
+# Also generate summary CSV with category totals
+python -m src.cli.categorize statement.pdf -o output.csv --summary
 
 # Use different Ollama model
-python -m src.cli statement.pdf -o output.csv --ollama-model llama3
+python -m src.cli.categorize statement.pdf -o output.csv --ollama-model llama3
 ```
 
 ### Generate Summary from CSV
@@ -56,10 +56,10 @@ Generate a summary from an existing transactions CSV. This allows you to review 
 
 ```bash
 # Generate summary (sorted by total descending)
-python -m src.cli summary transactions.csv -o summary.csv
+python -m src.cli.summarize transactions.csv -o summary.csv
 
 # Include all categories with zeros for unused ones
-python -m src.cli summary transactions.csv -o summary.csv -c categories/budget_sheet_categories.json
+python -m src.cli.summarize transactions.csv -o summary.csv -c categories/budget_sheet_categories.json
 ```
 
 ## Output Format
