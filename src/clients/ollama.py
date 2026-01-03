@@ -25,7 +25,7 @@ class OllamaClient:
         host: str = "localhost",
         port: int = 11434,
         model: str = "mistral",
-        timeout: float = 300.0,
+        timeout: float = 600.0,
     ):
         self.base_url = f"http://{host}:{port}"
         self.model = model

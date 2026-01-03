@@ -1,0 +1,28 @@
+{
+  "description": "Google Sheets budget configuration - customize cell mappings for your spreadsheet",
+  "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+  "template_sheet": "Budget Template",
+  "target_sheet": "January 2025",
+  "shallow_copy_cells": [],
+  "mappings": {
+    "Groceries": "B2",
+    "Restaurants": "B3",
+    "Transportation": "B4",
+    "Utilities": "B5",
+    "Entertainment": "B6",
+    "Shopping": "B7",
+    "Health": "B8",
+    "Travel": "B9",
+    "Subscriptions": "B10",
+    "Insurance": "B11",
+    "Education": "B12",
+    "Personal Care": "B13",
+    "Home": "B14",
+    "Pets": "B15",
+    "Gifts & Donations": "B16",
+    "Fees & Charges": "B17",
+    "Income": "B18"
+  },
+  "unmapped_categories": ["Other"],
+  "notes": "Update 'spreadsheet_id' with your Google Sheet ID from the URL. Customize cell mappings to match your budget spreadsheet layout. Categories in 'unmapped_categories' will be skipped during upload. Cells in 'shallow_copy_cells' will have formulas replaced with values when duplicating the template."
+}

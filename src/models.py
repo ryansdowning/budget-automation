@@ -70,7 +70,7 @@ class CategoriesConfig(BaseModel):
         for cat in self.categories:
             line = f"- {cat.name}: {cat.description}"
             if cat.keywords:
-                line += f" (examples: {', '.join(cat.keywords[:3])})"
+                line += f"\n  KEYWORDS: {', '.join(cat.keywords)}"
             lines.append(line)
         return "\n".join(lines)
 

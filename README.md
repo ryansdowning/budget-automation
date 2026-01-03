@@ -20,7 +20,11 @@ uv sync
 
 ## Usage
 
-There are two CLI scripts: `categorize` for processing PDFs and `summarize` for generating summaries.
+There are four CLI scripts:
+- `categorize` - Process PDFs and categorize transactions
+- `recategorize` - Re-categorize existing CSV (skip expensive PDF parsing)
+- `summarize` - Generate summary from transactions CSV
+- `upload_budget` - Upload summary to Google Sheets budget
 
 ### Categorize Transactions
 
@@ -50,6 +54,24 @@ python -m src.cli.categorize statement.pdf -o output.csv --summary
 python -m src.cli.categorize statement.pdf -o output.csv --ollama-model llama3
 ```
 
+### Re-categorize Existing CSV
+
+Re-run categorization on an existing CSV file without re-parsing PDFs. This is useful when you've updated category keywords or added new categories and want to apply those changes to previously parsed transactions.
+
+```bash
+# Re-categorize with updated categories
+python -m src.cli.recategorize transactions.csv -o recategorized.csv
+
+# Use custom categories file
+python -m src.cli.recategorize transactions.csv -o recategorized.csv -c categories/budget_sheet_categories.json
+
+# Preview what would change without writing output
+python -m src.cli.recategorize transactions.csv --dry-run --show-changes
+
+# Show category changes in output
+python -m src.cli.recategorize transactions.csv -o recategorized.csv --show-changes -v
+```
+
 ### Generate Summary from CSV
 
 Generate a summary from an existing transactions CSV. This allows you to review and correct the categorized transactions before generating the final summary.
@@ -61,6 +83,23 @@ python -m src.cli.summarize transactions.csv -o summary.csv
 # Include all categories with zeros for unused ones
 python -m src.cli.summarize transactions.csv -o summary.csv -c categories/budget_sheet_categories.json
 ```
+
+### Upload to Google Sheets Budget
+
+Upload category totals to a Google Sheets budget spreadsheet. Requires one-time setup of Google Cloud credentials (see [BUDGET_SHEETS_DESIGN.md](BUDGET_SHEETS_DESIGN.md) for setup instructions).
+
+```bash
+# Upload summary to budget sheet
+python -m src.cli.upload_budget summary.csv --sheet-id YOUR_SPREADSHEET_ID
+
+# Preview changes without updating
+python -m src.cli.upload_budget summary.csv --sheet-id YOUR_SPREADSHEET_ID --dry-run
+
+# Verbose output
+python -m src.cli.upload_budget summary.csv --sheet-id YOUR_SPREADSHEET_ID -v
+```
+
+The spreadsheet ID is found in the Google Sheets URL: `https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit`
 
 ## Output Format
 
@@ -116,7 +155,8 @@ All processing runs locally - no data is sent to external services.
 
 ## Architecture
 
-See [DESIGN.md](DESIGN.md) for detailed architecture documentation.
+- [CATEGORIZATION_DESIGN.md](CATEGORIZATION_DESIGN.md) - PDF parsing and categorization pipeline
+- [BUDGET_SHEETS_DESIGN.md](BUDGET_SHEETS_DESIGN.md) - Google Sheets budget integration
 
 ## Development
 

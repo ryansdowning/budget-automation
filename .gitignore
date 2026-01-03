@@ -14,3 +14,4 @@ test-files/
 debug/
 output/
 categories/budget_sheet_categories.json
+config/google_sheet_config_private.json

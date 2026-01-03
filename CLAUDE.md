@@ -13,19 +13,27 @@ src/
 ├── cli/
 │   ├── __init__.py         # Shared utilities (load_categories)
 │   ├── categorize.py       # CLI for PDF processing
-│   └── summarize.py        # CLI for summary generation
+│   ├── recategorize.py     # CLI for re-categorizing existing CSV
+│   ├── summarize.py        # CLI for summary generation
+│   └── upload_budget.py    # CLI for Google Sheets upload
 ├── pipeline.py             # Orchestrates parse → categorize → CSV
 ├── categorizer.py          # Batched LLM categorization
 ├── models.py               # Pydantic models (RawTransaction, etc.)
 ├── logging_config.py       # Loguru setup + DebugArtifacts
 ├── clients/
-│   └── ollama.py           # Ollama HTTP client
+│   ├── ollama.py           # Ollama HTTP client
+│   └── gsheets.py          # Google Sheets API client
+├── sheets/
+│   └── uploader.py         # Budget upload logic
 ├── parser/
 │   ├── base.py             # Abstract BaseParser
 │   └── pdfplumber_parser.py # PdfPlumberParser (pdfplumber + LLM)
 └── prompts/
     ├── parse.py            # PDF extraction prompts
     └── categorize.py       # Categorization prompts
+
+config/
+└── google_sheet_config.json  # Google Sheets budget configuration
 ```
 
 ## Key Patterns
@@ -82,6 +90,15 @@ Available category files:
 ### Change Models
 Use `--ollama-model llama3` to use a different model for both parsing and categorization.
 
+### Configure Google Sheets Upload
+Edit `config/google_sheet_config.json`:
+- `spreadsheet_id`: Your Google Sheet ID from the URL
+- `template_sheet`: Name of the template sheet to duplicate
+- `target_sheet`: Default name for new budget sheets
+- `mappings`: Category name → cell address mappings
+- `unmapped_categories`: Categories to skip during upload
+- `shallow_copy_cells`: Cells to convert from formulas to values when duplicating (useful for income cells that won't be populated by expense parsing)
+
 ## Common Tasks
 
 ### Run with verbose logging
@@ -101,6 +118,19 @@ python -m src.cli.categorize statement.pdf -o out.csv --summary
 # Creates out.csv and out_summary.csv with category totals
 ```
 
+### Re-categorize existing transactions
+Re-run categorization on an existing CSV without re-parsing PDFs (useful when updating keywords/categories):
+```bash
+# Re-categorize with updated categories
+python -m src.cli.recategorize transactions.csv -o recategorized.csv -c categories/budget_sheet_categories.json
+
+# Preview changes without writing output
+python -m src.cli.recategorize transactions.csv --dry-run --show-changes
+
+# Show only transactions that changed category
+python -m src.cli.recategorize transactions.csv -o recategorized.csv --show-changes
+```
+
 ### Generate summary from existing CSV
 Use this to review/correct transactions before generating the final summary:
 ```bash
@@ -109,6 +139,15 @@ python -m src.cli.summarize transactions.csv -o summary.csv
 
 # Include all categories (fills zeros for unused)
 python -m src.cli.summarize transactions.csv -o summary.csv -c categories/budget_sheet_categories.json
+```
+
+### Upload summary to Google Sheets budget
+```bash
+# Upload to budget sheet (adds to existing values)
+python -m src.cli.upload_budget summary.csv --sheet-id YOUR_SHEET_ID
+
+# Preview changes without applying
+python -m src.cli.upload_budget summary.csv --sheet-id YOUR_SHEET_ID --dry-run
 ```
 
 ### Test Ollama connection
@@ -126,6 +165,8 @@ print(client.check_model())       # True/False
 - **httpx**: HTTP client for Ollama API
 - **pdfplumber**: PDF text extraction
 - **pillow**: Image handling
+- **gspread**: Google Sheets API client
+- **google-auth**: Google authentication
 
 ## Testing Notes
 

@@ -3,6 +3,8 @@
 import argparse
 import csv
 import sys
+from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 
 from loguru import logger
@@ -12,6 +14,21 @@ from src.logging_config import configure_logging
 from src.models import CategoriesConfig
 
 
+def parse_date(date_str: str) -> tuple[int, int] | None:
+    """Parse a date string and return (year, month).
+
+    Supports formats: YYYY-MM-DD, MM/DD/YYYY, MM/DD/YY
+    """
+    formats = ["%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"]
+    for fmt in formats:
+        try:
+            dt = datetime.strptime(date_str.strip(), fmt)
+            return (dt.year, dt.month)
+        except ValueError:
+            continue
+    return None
+
+
 def generate_summary(
     input_path: Path,
     output_path: Path,
@@ -19,63 +36,88 @@ def generate_summary(
 ) -> None:
     """Generate a summary CSV from an existing transactions CSV.
 
+    Groups transactions by year, month, and category.
+
     Args:
-        input_path: Path to input CSV with 'amount' and 'category' columns
+        input_path: Path to input CSV with 'date', 'amount' and 'category' columns
         output_path: Path for output summary CSV
         categories: Optional categories config to include zero-amount categories
     """
-    # Read input CSV and sum by category
-    category_totals: dict[str, float] = {}
+    # Read input CSV and sum by (year, month, category)
+    # Key: (year, month, category) -> total
+    totals: dict[tuple[int, int, str], float] = defaultdict(float)
+    year_months: set[tuple[int, int]] = set()
 
     with open(input_path, newline="") as f:
         reader = csv.DictReader(f)
+        fieldnames = reader.fieldnames or []
 
-        if "amount" not in (reader.fieldnames or []):
+        if "amount" not in fieldnames:
             logger.error("Input CSV must have an 'amount' column")
             sys.exit(1)
-        if "category" not in (reader.fieldnames or []):
+        if "category" not in fieldnames:
             logger.error("Input CSV must have a 'category' column")
+            sys.exit(1)
+        if "date" not in fieldnames:
+            logger.error("Input CSV must have a 'date' column")
             sys.exit(1)
 
         for row in reader:
             category = row["category"]
+
+            # Parse date
+            date_result = parse_date(row["date"])
+            if date_result is None:
+                logger.warning(f"Skipping row with invalid date: {row['date']}")
+                continue
+            year, month = date_result
+            year_months.add((year, month))
+
+            # Parse amount
             try:
                 amount = float(row["amount"].replace("$", "").replace(",", ""))
             except ValueError:
                 logger.warning(f"Skipping invalid amount: {row['amount']}")
                 continue
 
-            category_totals[category] = category_totals.get(category, 0) + amount
+            totals[(year, month, category)] += amount
 
-    # If categories provided, ensure all categories are in output
+    # If categories provided, ensure all categories are in output for each year-month
     if categories:
-        for name in categories.get_category_names():
-            if name not in category_totals:
-                category_totals[name] = 0.0
+        for year, month in year_months:
+            for name in categories.get_category_names():
+                key = (year, month, name)
+                if key not in totals:
+                    totals[key] = 0.0
 
     # Write summary CSV
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(output_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["category", "total"])
+        writer = csv.DictWriter(f, fieldnames=["year", "month", "category", "total"])
         writer.writeheader()
 
-        # Sort by category name if using categories config, otherwise by total descending
+        # Get sorted list of (year, month, category) keys
         if categories:
-            sorted_categories = list(categories.get_category_names())
+            category_order = {name: i for i, name in enumerate(categories.get_category_names())}
+            sorted_keys = sorted(
+                totals.keys(),
+                key=lambda k: (k[0], k[1], category_order.get(k[2], 999)),
+            )
         else:
-            sorted_categories = sorted(
-                category_totals.keys(),
-                key=lambda k: category_totals[k],
-                reverse=True,
+            # Sort by year, month, then total descending
+            sorted_keys = sorted(
+                totals.keys(),
+                key=lambda k: (k[0], k[1], -totals[k]),
             )
 
-        for category_name in sorted_categories:
-            if category_name in category_totals:
-                writer.writerow({
-                    "category": category_name,
-                    "total": f"{category_totals[category_name]:.2f}",
-                })
+        for year, month, category in sorted_keys:
+            writer.writerow({
+                "year": year,
+                "month": month,
+                "category": category,
+                "total": f"{totals[(year, month, category)]:.2f}",
+            })
 
     logger.info(f"Wrote summary to {output_path}")
     print(f"Summary written to: {output_path}")

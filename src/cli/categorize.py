@@ -78,6 +78,12 @@ Examples:
         action="store_true",
         help="Generate a summary CSV with category totals",
     )
+    parser.add_argument(
+        "--statement-year",
+        type=int,
+        default=None,
+        help="Year to use for dates without year (e.g., Chase MM/DD format)",
+    )
 
     return parser.parse_args()
 
@@ -132,7 +138,11 @@ def main() -> int:
             debug_artifacts=debug_artifacts,
         ) as pipeline:
             # Process PDFs
-            transactions = pipeline.process(pdf_paths, dry_run=args.dry_run)
+            transactions = pipeline.process(
+                pdf_paths,
+                dry_run=args.dry_run,
+                statement_year=args.statement_year,
+            )
 
             # Write output
             if transactions:

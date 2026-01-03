@@ -18,11 +18,12 @@ class BaseParser(ABC):
         self.debug_artifacts = debug_artifacts or DebugArtifacts()
 
     @abstractmethod
-    def parse(self, pdf_path: Path) -> list[RawTransaction]:
+    def parse(self, pdf_path: Path, statement_year: int | None = None) -> list[RawTransaction]:
         """Extract transactions from a PDF file.
 
         Args:
             pdf_path: Path to the PDF statement
+            statement_year: Year to use for dates without year (e.g., MM/DD format)
 
         Returns:
             List of extracted transactions

@@ -1,5 +1,6 @@
 """PDF parser using pdfplumber for text extraction + LLM for parsing."""
 
+import re
 import time
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -67,7 +68,7 @@ class PdfPlumberParser(BaseParser):
                 host=self.host,
                 port=self.port,
                 model=self.model,
-                timeout=300.0,
+                timeout=600.0,
             )
         return self._ollama
 
@@ -134,15 +135,17 @@ class PdfPlumberParser(BaseParser):
 
         return transaction_pages
 
-    def parse(self, pdf_path: Path) -> list[RawTransaction]:
+    def parse(self, pdf_path: Path, statement_year: int | None = None) -> list[RawTransaction]:
         """Extract transactions from a PDF file.
 
         Args:
             pdf_path: Path to the PDF statement
+            statement_year: Year to use for dates without year (e.g., MM/DD format)
 
         Returns:
             List of extracted transactions
         """
+        self._statement_year = statement_year
         if not pdf_path.exists():
             raise FileNotFoundError(f"PDF not found: {pdf_path}")
 
@@ -216,6 +219,7 @@ class PdfPlumberParser(BaseParser):
             parsed = self._parse_transaction(
                 {"date": tx.date, "description": tx.description, "amount": tx.amount},
                 full_text,
+                statement_year=self._statement_year,
             )
             if parsed:
                 key = (parsed.date, parsed.description, parsed.amount)
@@ -247,6 +251,12 @@ class PdfPlumberParser(BaseParser):
             date_str = str(data.get("date", "")).strip()
             if not date_str:
                 return None
+
+            # Clean date string - extract just the date portion
+            # Handles cases like "04/24/25 1" -> "04/24/25"
+            date_match = re.match(r"(\d{1,4}[-/]\d{1,2}(?:[-/]\d{2,4})?)", date_str)
+            if date_match:
+                date_str = date_match.group(1)
 
             if statement_year is None:
                 statement_year = datetime.now().year

@@ -59,12 +59,14 @@ class Pipeline:
         self,
         pdf_paths: list[Path],
         dry_run: bool = False,
+        statement_year: int | None = None,
     ) -> list[CategorizedTransaction]:
         """Process PDF files and return categorized transactions.
 
         Args:
             pdf_paths: List of PDF file paths to process
             dry_run: If True, only parse (skip categorization)
+            statement_year: Year to use for dates without year (e.g., MM/DD format)
 
         Returns:
             List of categorized transactions
@@ -78,7 +80,7 @@ class Pipeline:
         for i, pdf_path in enumerate(pdf_paths):
             logger.info(f"[{i + 1}/{len(pdf_paths)}] {pdf_path.name}")
             try:
-                transactions = self._parser.parse(pdf_path)
+                transactions = self._parser.parse(pdf_path, statement_year=statement_year)
                 all_transactions.extend(transactions)
             except Exception as e:
                 logger.error(f"Failed to parse {pdf_path.name}: {e}")
