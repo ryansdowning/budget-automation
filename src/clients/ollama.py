@@ -58,8 +58,8 @@ class OllamaClient:
             "stream": False,
             "options": {
                 "temperature": temperature,
-                "num_predict": 4096,  # Enough for ~100 transactions
-                "num_ctx": 16384,     # Balanced context window
+                "num_predict": 8192,  # Enough for ~150+ transactions
+                "num_ctx": 32768,     # Large context for big statements
             },
         }
 

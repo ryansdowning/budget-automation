@@ -16,6 +16,38 @@ from src.models import RawTransaction, TransactionExtractionResponse
 from src.parser.base import BaseParser
 from src.prompts.parse import PARSE_SYSTEM, PARSE_USER
 
+# Patterns that indicate a line is NOT a valid transaction
+INVALID_TRANSACTION_PATTERNS = [
+    r"^\+",  # Starts with + (reward point summaries)
+    r"Points earned",  # Point earning summaries
+    r"\bPts\b.*for\b",  # "2X Pts for..." patterns
+    r"^Rewards®",  # Card name lines
+    r"Credit Card$",  # Lines ending with "Credit Card"
+    r"^Total (Purchases|Balance|Due|Fees|Interest|Credits)",  # Total summary lines (not "TOTAL TURF")
+    r"^Balance (Forward|Transfers|Due)",  # Balance summary lines
+    r"^Minimum Payment",  # Minimum payment info
+    r"^Payment Due",  # Payment due info
+    r"RAPID\s*(REWARDS|SMT)",  # Southwest card branding lines
+]
+
+# Compile patterns for efficiency
+_INVALID_PATTERNS_COMPILED = [re.compile(p, re.IGNORECASE) for p in INVALID_TRANSACTION_PATTERNS]
+
+
+def is_valid_transaction(description: str) -> bool:
+    """Check if a transaction description is valid (not a statement artifact).
+
+    Args:
+        description: Transaction description to validate
+
+    Returns:
+        True if valid transaction, False if it's a statement artifact
+    """
+    for pattern in _INVALID_PATTERNS_COMPILED:
+        if pattern.search(description):
+            return False
+    return True
+
 
 class PageHasTransactions(BaseModel):
     """Response model for transaction table detection."""
@@ -214,8 +246,15 @@ class PdfPlumberParser(BaseParser):
         process_start = time.perf_counter()
         all_transactions: list[RawTransaction] = []
         seen: set[tuple] = set()
+        filtered_count = 0
 
         for tx in extraction.transactions:
+            # Validate transaction description before processing
+            if not is_valid_transaction(tx.description):
+                logger.info(f"Filtered invalid: {tx.description[:60]}")
+                filtered_count += 1
+                continue
+
             parsed = self._parse_transaction(
                 {"date": tx.date, "description": tx.description, "amount": tx.amount},
                 full_text,
@@ -226,6 +265,9 @@ class PdfPlumberParser(BaseParser):
                 if key not in seen:
                     seen.add(key)
                     all_transactions.append(parsed)
+
+        if filtered_count > 0:
+            logger.info(f"Filtered {filtered_count} invalid transaction(s) (statement artifacts)")
 
         process_time = time.perf_counter() - process_start
         self.debug_artifacts.save_json(
@@ -262,7 +304,7 @@ class PdfPlumberParser(BaseParser):
                 statement_year = datetime.now().year
 
             parsed_date = None
-            for fmt in ["%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y", "%d/%m/%Y", "%m-%d-%Y"]:
+            for fmt in ["%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y", "%m-%d-%y", "%d/%m/%Y", "%m-%d-%Y", "%m%d%y"]:
                 try:
                     parsed_date = datetime.strptime(date_str, fmt).date()
                     break

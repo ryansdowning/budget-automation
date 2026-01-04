@@ -18,6 +18,7 @@ from src.cli import load_categories
 from src.clients.ollama import OllamaClient
 from src.logging_config import DebugArtifacts, configure_logging
 from src.models import CategorizedTransaction, RawTransaction
+from src.parser.pdfplumber_parser import is_valid_transaction
 
 
 def parse_args() -> argparse.Namespace:
@@ -139,6 +140,11 @@ def load_csv_transactions(csv_path: Path) -> tuple[list[RawTransaction], dict[st
 
                 description = row["description"].strip()
                 if not description:
+                    continue
+
+                # Filter out statement artifacts
+                if not is_valid_transaction(description):
+                    logger.info(f"Filtered invalid: {description[:60]}")
                     continue
 
                 transactions.append(

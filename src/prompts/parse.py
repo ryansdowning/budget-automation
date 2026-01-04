@@ -9,10 +9,17 @@ IMPORTANT RULES:
 4. OUTPUT dates in standardized format: "YYYY-MM-DD" if year is available, or "MM-DD" if only month/day
 5. Amounts may have $ symbols and commas - extract just the number
 6. Negative amounts or credits should be negative numbers
-7. Do NOT include: headers, totals, payment due dates, interest charges, or account summaries
-8. DO include: purchases, payments, credits, refunds, fees
+7. DO include: purchases, payments, credits, refunds, fees
+8. Do NOT include:
+   - Headers, footers, page numbers
+   - Account summaries, totals, balances
+   - Payment due dates, minimum payment info
+   - Interest charges, APR information
+   - Reward points summaries (lines starting with + like "+ 2X Pts for...")
+   - Card name/type lines ("Rewards® Credit Card")
+   - Promotional text or advertisements
 
-You must return ALL transactions found. A typical statement has 10-50+ transactions."""
+You must return ALL actual transactions found. A typical statement has 10-50+ transactions."""
 
 PARSE_USER = """Extract ALL transactions from this credit card statement text.
 
